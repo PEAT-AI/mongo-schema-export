@@ -32,17 +32,22 @@ def mongo_import(client: pymongo.MongoClient, fname: str, del_db: bool = False, 
             log(verbose, "Creating database:", dbname)
             db = client[dbname]
             for cname, c in d.items():
+                exists = False
                 if del_col:
                     log(verbose, "\tDropping collection", cname)
                     db.drop_collection(cname)
                 else:
                     # if the collection already exists, skip it
                     if cname in db.collection_names():
-                        print("\t{} already exists, skipping".format(cname))
-                        continue
+                        print("\t{} already exists".format(cname))
+                        exists = True
+
                 log(verbose, "\tCreating collection:", cname)
                 log(verbose, "\t\tOptions", c['options'])
-                collection = db.create_collection(cname, **c['options'])
+                if not exists:
+                    collection = db.create_collection(cname, **c['options'])
+                else:
+                    collection = db[cname]
                 for i in c['indexes']:
                     log(verbose, "\t\tCreating index:", i)
                     keys = [tuple(x) for x in i['keys']]

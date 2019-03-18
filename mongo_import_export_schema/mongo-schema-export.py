@@ -74,8 +74,6 @@ def main(argv=sys.argv):
                         help='Databases separated by a comma, eg: db_1,db_2,db_n')
     parser.add_argument('--verbose', action='store_true', help='Show verbose output')
     args = parser.parse_args(argv[1:])
-    if not args.databases:
-        exit("Please specify at least one database to export")
     if args.uri:
         _client = pymongo.MongoClient(args.uri)
     else:
@@ -84,8 +82,11 @@ def main(argv=sys.argv):
             if hasattr(args, i):
                 client_args[i] = getattr(args, i)
         _client = pymongo.MongoClient(**client_args)
-
-    s = mongo_export(_client, args.file, args.databases, args.verbose)
+    if not args.databases:
+        databases = _client.database_names()
+    else:
+        databases = args.databases
+    s = mongo_export(_client, args.file, databases, args.verbose)
     if args.verbose:
         print(s)
 
