@@ -23,8 +23,11 @@ def mongo_import(client: pymongo.MongoClient, fname: str, del_db: bool = False, 
     with open(fname, 'r') as input_conf:
         conf = json_util.loads(input_conf.read())
         for dbname, d in conf['databases'].items():
+            print("current database: {}".format(dbname))
             if databases is not None and databases != "*" and dbname not in databases.split(','):
                 log(verbose, "Skipping:", dbname)
+                continue
+            if dbname in ['config','admin', 'local']:
                 continue
             if del_db:
                 log(verbose, "Dropping database:", dbname)
